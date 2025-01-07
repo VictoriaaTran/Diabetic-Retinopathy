@@ -16,3 +16,5 @@ The following implementations are used for predictive measures:
 
 <h2>Findings</h2>
 Our findings indicate most important factors influencing both the type of diabetes and the severity of diabetic retinopathy in patients that potentially lead to blindness. Additionally, observations of images on severity predict about 72% in accuracy by identifying the level of diabetic retinopathy in diabetic/pre-diabetic patients.
+
+co-author: Ashley Huynh, Regina Santos, Hassan Qureshi
