@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.figure_factory as ff
 
 # load datset
 df = pd.read_csv("diabetes_dataset00.csv")
@@ -60,9 +61,12 @@ with col2:
 # Function to plot a histogram plot for descriptive stats based on the selected diabetic type
 def display_stats(col, title, df_column, color, selected_type):
     with col:
+        # display distribution based on selected type
         if selected_type:
             type = df[df['Target'] == selected_type]
-            fig = px.histogram(data_frame=type, nbins=20, x=df_column, title=title, color_discrete_sequence=[color])
+            fig = px.histogram(data_frame=type, x=df_column, 
+                               nbins=10, title=title, barmode='overlay', 
+                               histnorm="probability density", color_discrete_sequence=[color])
             st.plotly_chart(fig, theme='streamlit')
         
 
