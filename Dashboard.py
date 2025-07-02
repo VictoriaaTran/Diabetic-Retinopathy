@@ -10,7 +10,7 @@ st.title("Diabetic Retinopathy Dashboard")
 # page configuration
 st.set_page_config(
     page_title="Diabetic Retinopathy Dashboard",
-    layout='centered'
+    layout='wide'
 )
 
 # dropdown menu to select type
@@ -54,9 +54,40 @@ with col1:
 # display information about the type
 with col2:
     type_desc = diabetic_options[diabetic_options['Type'] == selected_diabetic_type].iloc[0]
-    st.write("#### Description")
+    st.write(f"##### {type_desc['Type']}:")
     st.write(type_desc['Desc'])
    
+# Function to plot a histogram plot for descriptive stats based on the selected diabetic type
+def display_stats(col, title, df_column, color, selected_type):
+    with col:
+        if selected_type:
+            type = df[df['Target'] == selected_type]
+            fig = px.histogram(data_frame=type, nbins=20, x=df_column, title=title, color_discrete_sequence=[color])
+            st.plotly_chart(fig, theme='streamlit')
+        
+
+st.write("### Descriptive Statistics")
+
+# metrics to display on charts
+metrics = [
+    # (chart title, df_column, chart_color)
+    ("Age Distribution", "Age", '#15B2D3'),
+    ("BMI Distribution", "BMI", '#236E96'),
+    ("Blood Pressure", "Blood Pressure", "#00896F"),
+    ("Cholesterol Levels", "Cholesterol Levels", "#F3872F"),
+    ("Blood Glucose Levels", "Blood Glucose Levels", "#FF598F"),
+    ("Insulin Levels", "Insulin Levels", "#D45B12")
+]
+
+# creating columns for displaying charts
+cols = st.columns(3, gap='medium')
+
+# loop through each cols and metrics and call to plot charts
+for i, (title, df_column, color) in enumerate(metrics):
+    with cols[i%3]:
+        display_stats(cols[i%3], title, df_column, color, selected_diabetic_type)
+        
+
 
 
 
