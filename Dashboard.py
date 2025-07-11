@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.figure_factory as ff
+import pickle
+import os
 
 # load datset
 df = pd.read_csv("diabetes_dataset00.csv")
@@ -92,8 +94,88 @@ for i, (title, df_column, color) in enumerate(metrics):
         display_stats(cols[i%3], title, df_column, color, selected_diabetic_type)
         
 
+######################################
+# prediction section
+st.write("## Machine Learning Prediction Models")
 
+# load models
+model_names = list()
+with open("models/best_tree.pkl", "rb") as file:
+    tree_model = pickle.load(file)
+    model_names.append(tree_model)
+with open("models/log_reg_model.pkl", "rb") as file:
+    log_reg_model = pickle.load(file)
+    model_names.append(log_reg_model)
+with open("models/rf_model.pkl", "rb") as file:
+    rf_model = pickle.load(file)
+    model_names.append(rf_model)
+with open("models/xgb_model.pkl", "rb") as file:
+    xgb_model = pickle.load(file)
+    model_names.append(xgb_model)
 
+# creating user inputs
+st.write("#### Input data")
+age_input = st.number_input("Age", value=None, min_value=0, max_value=110)
+bmi_input = st.number_input("BMI", value=None, min_value=10, max_value=60, placeholder="Enter 10-60")
+bp_input = st.number_input("Blood Pressure", value=None, min_value=60, max_value=200, placeholder="Enter 60-200")
+cholesterol_input = st.number_input("Cholesterol", value=None, min_value=100, max_value=400, placeholder="Enter 100-400")
+blood_glucose_input = st.number_input("Blood Glucose", value=None, min_value=70, max_value=300, placeholder="Enter 70-300")
+insulin_input = st.number_input("Insulin", value=None, min_value=0, max_value=1000, placeholder="Enter 0-1000")
 
+# input values for prediction analysis
+df_pred = pd.DataFrame({
+    "Age": age_input,
+    "BMI": bmi_input,
+    "Blood Pressure": bp_input,
+    "Cholesterol Levels": cholesterol_input,
+    "Blood Glucose Levels": blood_glucose_input,
+    "Insulin Levels": insulin_input
+}, index=[0])
 
+models = ["Decision Tree", "Logistic Regression", "Random Forest", "Gradient Boosting"]
+model_selection = st.selectbox("Select model", models)
+
+# label mapping for logistic regression model
+label_mapping = {
+    1: "Cystic Fibrosis-Related Diabetes (CFRD)",
+    2: "Gestational Diabetes",
+    3: "LADA",
+    4: "MODY",
+    5: "Neonatal Diabetes Mellitus (NDM)",
+    6: "Prediabetic",
+    7: "Secondary Diabetes",
+    8: "Steroid-Induced Diabetes",
+    9: "Type 1 Diabetes",
+    10: "Type 2 Diabetes",
+    11: "Type 3c Diabetes (Pancreatogenic Diabetes)",
+    12: "Wolcott-Rallison Syndrome",
+    13: "Wolfram Syndrome"
+}
+def predicting_result(model_selection):
+    # check if any input is None
+    if (age_input is None or bmi_input is None or bp_input is None or 
+        cholesterol_input is None or blood_glucose_input is None or insulin_input is None):
+        return None
+    if model_selection == "Decision Tree":
+        prediction = tree_model.predict(df_pred.to_numpy())[0]
+        return prediction
+    elif model_selection == "Logistic Regression":
+        prediction = log_reg_model.predict(df_pred.to_numpy())[0]
+        prediction = prediction.astype(int)  # Ensure the prediction is an integer
+        result = diabetic_type[prediction]
+        return result
+    elif model_selection == "Random Forest":
+        prediction = rf_model.predict(df_pred.to_numpy())[0]
+        return prediction
+    elif model_selection == "Gradient Boosting":
+        prediction = xgb_model.predict(df_pred.to_numpy())[0]
+        return prediction
+
+# button to predict
+if st.button("Predict"):
+    result = predicting_result(model_selection)
+    if result is not None:
+        st.success(f"Predicted Diabetic Type: {result}")
+    else:
+        st.error("Please fill all input fields before predicting.")
 
